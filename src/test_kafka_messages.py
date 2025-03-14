@@ -20,7 +20,7 @@ def delivery_report(err, msg):
 
 # Тестовое сообщение в виде словаря
 test_message = {
-    "to_user": "4e3ea803-e1da-46d6-972f-d6d495442066",
+    "to_user": "7cc373e4-2bee-49a4-8a27-7871b246c6a7",
     "title": "Test Push Notification",
     "body": "This is a test message from Kafka!",
 }

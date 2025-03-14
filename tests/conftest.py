@@ -18,7 +18,10 @@ from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.bootstrap import make_app
+from src.repositories.device import DeviceRepository
+from src.repositories.notification import NotificationRepository
 from src.settings import get_settings, Settings
+from src.web.depends.service import get_notification_service
 
 TEST_SQL_ALCHEMY_CLIENT = SQLAlchemyClient(dsn=get_settings().test_postgres_dsn)
 
@@ -111,3 +114,11 @@ async def auth_client(app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
     ) as client:
         client.user_id = user_id
         yield client
+
+
+@pytest.fixture()
+async def notifications_service(session):
+    notifications_service = await get_notification_service(
+        NotificationRepository(session=session), DeviceRepository(session=session)
+    )
+    return notifications_service
