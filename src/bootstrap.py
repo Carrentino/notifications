@@ -38,7 +38,7 @@ async def _lifespan(
     client = make_db_client()
     initialize_firebase()
     kafka_consumer = AIOKafkaConsumer(
-        'notifications_pushes',
+        *get_settings().kafka.topics,
         bootstrap_servers=get_settings().kafka_server_host.get_secret_value(),
         group_id='notifications_service',
     )
