@@ -16,6 +16,7 @@ from helpers.sqlalchemy.client import SQLAlchemyClient
 from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import PostgresDsn
 
+from src.kafka.emails.views import mail_listener
 from src.kafka.pushes.views import pushes_listener
 from src.settings import get_settings
 from src.web.api.devices.views import devices_router
@@ -39,11 +40,12 @@ async def _lifespan(
     initialize_firebase()
     kafka_consumer = AIOKafkaConsumer(
         *get_settings().kafka.topics,
-        bootstrap_servers=get_settings().kafka_server_host.get_secret_value(),
+        bootstrap_servers=get_settings().kafka.bootstrap_servers,
         group_id='notifications_service',
     )
     await kafka_consumer.start()
     create_task(pushes_listener.listen(kafka_consumer))
+    create_task(mail_listener.listen(kafka_consumer))
 
     try:
         yield {

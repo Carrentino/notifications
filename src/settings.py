@@ -7,8 +7,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class KafkaSettings(BaseSettings):
     bootstrap_servers: str
     group_id: str
-    notifications_url: str
     topic_notifications_pushes: str
+    topic_notifications_mails: str
 
     model_config = SettingsConfigDict(
         env_file='.env',
@@ -23,6 +23,23 @@ class KafkaSettings(BaseSettings):
     @property
     def topics(self) -> list[str]:
         return [v for k, v in self.__dict__.items() if k.startswith('topic_')]
+
+
+class SMTPSettings(BaseSettings):
+    server: str = Field(default="smtp.timeweb.ru", validation_alias='SMTP_SERVER')
+    port: int = 25
+    username: str = Field(default="notify@carrentino.ru", validation_alias='SMTP_USERNAME')
+    password: str = Field(validation_alias='SMTP_PASSWORD')
+
+    model_config = SettingsConfigDict(
+        env_file='.env',
+        env_file_encoding='utf-8',
+        str_strip_whitespace=True,
+        validate_default=True,
+        case_sensitive=False,
+        extra='ignore',
+        env_prefix='smtp_',
+    )
 
 
 class Settings(BaseSettings):
@@ -55,11 +72,12 @@ class Settings(BaseSettings):
 
     trace_id_header: str = 'X-Trace-Id'
     jwt_key: SecretStr = Field(default=SecretStr('551b8ef09b5e43ddcc45461f854a89b83b9277c6e578f750bf5a6bc3f06d8c08'))
-    kafka_server_host: SecretStr = Field(default='localhost')
     FIREBASE_CREDENTIALS_PATH: SecretStr = Field(
         default='/Users/oleggrigorev/Documents/carrentino-147b1-0db9fa394048.json'
     )
     kafka: KafkaSettings = KafkaSettings()
+    smtp: SMTPSettings = SMTPSettings()
+    base_users_url: str = Field(default='https://carrentino.ru/users/api/', validation_alias='BASE_USERS_URL')
 
 
 @lru_cache
