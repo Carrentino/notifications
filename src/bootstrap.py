@@ -28,7 +28,7 @@ def make_db_client(dsn: PostgresDsn = get_settings().postgres_dsn) -> SQLAlchemy
 
 
 def initialize_firebase():
-    cred = firebase_admin.credentials.Certificate(get_settings().FIREBASE_CREDENTIALS_PATH.get_secret_value())
+    cred = firebase_admin.credentials.Certificate(get_settings().FIREBASE_CREDENTIALS_PATH)
     firebase_admin.initialize_app(cred)
 
 
