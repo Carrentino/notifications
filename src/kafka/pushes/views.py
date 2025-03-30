@@ -13,6 +13,7 @@ pushes_listener = KafkaConsumerTopicsListeners()
 
 @pushes_listener.add(get_settings().kafka.topic_notifications_pushes, SendPushMsg)
 async def send_push(message: SendPushMsg) -> None:
+    print('Получено сообщение на отправку пуша')  # noqa
     async with get_db_session_context(make_db_client()) as session:
         notifications_service = await get_notification_service(
             NotificationRepository(session=session), DeviceRepository(session=session)
