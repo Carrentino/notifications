@@ -26,10 +26,10 @@ class KafkaSettings(BaseSettings):
 
 
 class SMTPSettings(BaseSettings):
-    server: str = Field(default="smtp.timeweb.ru", validation_alias='SMTP_SERVER')
+    server: str = Field(default="smtp.timeweb.ru")
     port: int = 25
-    username: str = Field(default="notify@carrentino.ru", validation_alias='SMTP_USERNAME')
-    password: str = Field(validation_alias='SMTP_PASSWORD')
+    username: str = Field(default="notify@carrentino.ru")
+    password: str = Field(default='password')
 
     model_config = SettingsConfigDict(
         env_file='.env',
@@ -77,7 +77,7 @@ class Settings(BaseSettings):
     )
     kafka: KafkaSettings = KafkaSettings()
     smtp: SMTPSettings = SMTPSettings()
-    base_users_url: str = Field(default='https://carrentino.ru/users/api/', validation_alias='BASE_USERS_URL')
+    base_users_url: str = Field(default='https://carrentino.ru/users/api/')
 
 
 @lru_cache
