@@ -83,7 +83,7 @@ jobs:
             --config-rm $OLD_CONFIG_NAME \
             --config-add source=$CONFIG_NAME,target=/app/.env \
             --config-add source=notifications_firebase_confg,target=/app/carrentino-147b1-0db9fa394048.json
-            --image ghcr.io/carrentino/cars:${{ github.sha }} carrentino_notifications
+            --image ghcr.io/carrentino/notifications:${{ github.sha }} carrentino_notifications
             docker config rm $OLD_CONFIG_NAME
   migrate:
     needs: deploy
