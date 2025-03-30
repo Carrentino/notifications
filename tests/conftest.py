@@ -95,7 +95,7 @@ async def settings() -> Settings:
 async def client(
     app: FastAPI,
 ) -> AsyncGenerator[AsyncClient, None]:
-    async with AsyncClient(app=app, base_url='http://test') as client:
+    async with AsyncClient(app=app, base_url='http://test/notifications/') as client:
         yield client
 
 
@@ -110,7 +110,7 @@ async def auth_client(app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
     }
     token = encode_jwt(get_settings().jwt_key.get_secret_value(), payload, algorithm="HS256")
     async with AsyncClient(
-        transport=ASGITransport(app=app), base_url='http://test', headers={'X-Auth-Token': token}
+        transport=ASGITransport(app=app), base_url='http://test/notifications/', headers={'X-Auth-Token': token}
     ) as client:
         client.user_id = user_id
         yield client

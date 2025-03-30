@@ -5,10 +5,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class KafkaSettings(BaseSettings):
-    bootstrap_servers: str
-    group_id: str
-    topic_notifications_pushes: str
-    topic_notifications_mails: str
+    bootstrap_servers: str = Field(default='localhost:9092')
+    group_id: str = Field(default='notifications-group')
+    topic_notifications_pushes: str = Field(default='notifications_pushes')
+    topic_notifications_mails: str = Field(default='notifications_mails')
 
     model_config = SettingsConfigDict(
         env_file='.env',
@@ -52,7 +52,7 @@ class Settings(BaseSettings):
         extra='ignore',
     )
 
-    host: str = '127.0.0.1'
+    host: str = '0.0.0.0'  # noqa
     port: int = 8080
     workers_count: int = 1
     reload: bool = True
