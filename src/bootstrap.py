@@ -42,8 +42,6 @@ async def _lifespan(
         *get_settings().kafka.topics,
         bootstrap_servers=get_settings().kafka.bootstrap_servers,
         group_id=get_settings().kafka.group_id,
-        auto_offset_reset="earliest",
-        enable_auto_commit=True,
     )
     await kafka_consumer.start()
     create_task(pushes_listener.listen(kafka_consumer))
