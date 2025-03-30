@@ -72,9 +72,7 @@ class Settings(BaseSettings):
 
     trace_id_header: str = 'X-Trace-Id'
     jwt_key: SecretStr = Field(default=SecretStr('551b8ef09b5e43ddcc45461f854a89b83b9277c6e578f750bf5a6bc3f06d8c08'))
-    FIREBASE_CREDENTIALS_PATH: SecretStr = Field(
-        default='/Users/oleggrigorev/Documents/carrentino-147b1-0db9fa394048.json'
-    )
+    FIREBASE_CREDENTIALS_PATH: str = Field(default='/Users/oleggrigorev/Documents/carrentino-147b1-0db9fa394048.json')
     kafka: KafkaSettings = KafkaSettings()
     smtp: SMTPSettings = SMTPSettings()
     base_users_url: str = Field(default='https://carrentino.ru/users/api/')
