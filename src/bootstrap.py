@@ -12,6 +12,7 @@ from helpers.api.bootstrap.setup_error_handlers import setup_error_handlers
 from helpers.api.middleware.auth import AuthMiddleware
 from helpers.api.middleware.trace_id.middleware import TraceIdMiddleware
 from helpers.api.middleware.unexpected_errors.middleware import ErrorsHandlerMiddleware
+from helpers.kafka.consumer import KafkaConsumerTopicsListeners
 from helpers.sqlalchemy.client import SQLAlchemyClient
 from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import PostgresDsn
@@ -28,8 +29,21 @@ def make_db_client(dsn: PostgresDsn = get_settings().postgres_dsn) -> SQLAlchemy
 
 
 def initialize_firebase():
-    cred = firebase_admin.credentials.Certificate(get_settings().FIREBASE_CREDENTIALS_PATH.get_secret_value())
+    cred = firebase_admin.credentials.Certificate(get_settings().FIREBASE_CREDENTIALS_PATH)
     firebase_admin.initialize_app(cred)
+
+
+async def kafka_router(consumer: AIOKafkaConsumer, listeners: list[KafkaConsumerTopicsListeners]):
+    registered_topics = {topic: listener for listener in listeners for topic in listener.topics}
+
+    print(f"Запущен Kafka Router для топиков: {registered_topics.keys()}")  # noqa
+
+    async for message in consumer:
+        print(f"Получено сообщение из {message.topic}")  # noqa
+        if message.topic in registered_topics:
+            await registered_topics[message.topic].process_incoming_message(message)
+        else:
+            print(f"❌ Нет обработчика для топика {message.topic}")  # noqa
 
 
 @asynccontextmanager
@@ -41,11 +55,10 @@ async def _lifespan(
     kafka_consumer = AIOKafkaConsumer(
         *get_settings().kafka.topics,
         bootstrap_servers=get_settings().kafka.bootstrap_servers,
-        group_id='notifications_service',
+        group_id=get_settings().kafka.group_id,
     )
     await kafka_consumer.start()
-    create_task(pushes_listener.listen(kafka_consumer))
-    create_task(mail_listener.listen(kafka_consumer))
+    create_task(kafka_router(kafka_consumer, [pushes_listener, mail_listener]))
 
     try:
         yield {
@@ -63,7 +76,7 @@ def setup_middlewares(app: FastAPI) -> None:
 
 
 def setup_api_routers(app: FastAPI) -> None:
-    api_router = APIRouter(prefix='/api/v1')
+    api_router = APIRouter(prefix='/notifications/api')
     api_router.include_router(devices_router, prefix='/devices', tags=['devices'])
     app.include_router(router=api_router)
 
@@ -78,9 +91,9 @@ def make_app() -> FastAPI:
     app = FastAPI(
         title='notifications',
         lifespan=_lifespan,
-        docs_url='/api/docs',
-        redoc_url='/api/redoc',
-        openapi_url='/api/openapi.json',
+        docs_url='/notifications/api/docs',
+        redoc_url='/notifications/api/redoc',
+        openapi_url='/notifications/api/openapi.json',
         default_response_class=UJSONResponse,
     )
 

@@ -5,10 +5,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class KafkaSettings(BaseSettings):
-    bootstrap_servers: str
-    group_id: str
-    topic_notifications_pushes: str
-    topic_notifications_mails: str
+    bootstrap_servers: str = Field(default='localhost:9092')
+    group_id: str = Field(default='notifications-group')
+    topic_notifications_pushes: str = Field(default='notifications_pushes')
+    topic_notifications_mails: str = Field(default='notifications_mails')
 
     model_config = SettingsConfigDict(
         env_file='.env',
@@ -26,10 +26,10 @@ class KafkaSettings(BaseSettings):
 
 
 class SMTPSettings(BaseSettings):
-    server: str = Field(default="smtp.timeweb.ru", validation_alias='SMTP_SERVER')
+    server: str = Field(default="smtp.timeweb.ru")
     port: int = 25
-    username: str = Field(default="notify@carrentino.ru", validation_alias='SMTP_USERNAME')
-    password: str = Field(validation_alias='SMTP_PASSWORD')
+    username: str = Field(default="notify@carrentino.ru")
+    password: str = Field(default='password')
 
     model_config = SettingsConfigDict(
         env_file='.env',
@@ -52,7 +52,7 @@ class Settings(BaseSettings):
         extra='ignore',
     )
 
-    host: str = '127.0.0.1'
+    host: str = '0.0.0.0'  # noqa
     port: int = 8080
     workers_count: int = 1
     reload: bool = True
@@ -72,12 +72,10 @@ class Settings(BaseSettings):
 
     trace_id_header: str = 'X-Trace-Id'
     jwt_key: SecretStr = Field(default=SecretStr('551b8ef09b5e43ddcc45461f854a89b83b9277c6e578f750bf5a6bc3f06d8c08'))
-    FIREBASE_CREDENTIALS_PATH: SecretStr = Field(
-        default='/Users/oleggrigorev/Documents/carrentino-147b1-0db9fa394048.json'
-    )
+    FIREBASE_CREDENTIALS_PATH: str = Field(default='/Users/oleggrigorev/Documents/carrentino-147b1-0db9fa394048.json')
     kafka: KafkaSettings = KafkaSettings()
     smtp: SMTPSettings = SMTPSettings()
-    base_users_url: str = Field(default='https://carrentino.ru/users/api/', validation_alias='BASE_USERS_URL')
+    base_users_url: str = Field(default='https://carrentino.ru/users/api/')
 
 
 @lru_cache
