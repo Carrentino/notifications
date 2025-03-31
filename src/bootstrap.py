@@ -12,6 +12,7 @@ from helpers.api.bootstrap.setup_error_handlers import setup_error_handlers
 from helpers.api.middleware.auth import AuthMiddleware
 from helpers.api.middleware.trace_id.middleware import TraceIdMiddleware
 from helpers.api.middleware.unexpected_errors.middleware import ErrorsHandlerMiddleware
+from helpers.kafka.consumer import KafkaConsumerTopicsListeners
 from helpers.sqlalchemy.client import SQLAlchemyClient
 from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import PostgresDsn
@@ -32,6 +33,19 @@ def initialize_firebase():
     firebase_admin.initialize_app(cred)
 
 
+async def kafka_router(consumer: AIOKafkaConsumer, listeners: list[KafkaConsumerTopicsListeners]):
+    registered_topics = {topic: listener for listener in listeners for topic in listener.topics}
+
+    print(f"Запущен Kafka Router для топиков: {registered_topics.keys()}")  # noqa
+
+    async for message in consumer:
+        print(f"Получено сообщение из {message.topic}")  # noqa
+        if message.topic in registered_topics:
+            await registered_topics[message.topic].process_incoming_message(message)
+        else:
+            print(f"❌ Нет обработчика для топика {message.topic}")  # noqa
+
+
 @asynccontextmanager
 async def _lifespan(
     app: FastAPI,  # noqa
@@ -44,8 +58,7 @@ async def _lifespan(
         group_id=get_settings().kafka.group_id,
     )
     await kafka_consumer.start()
-    create_task(pushes_listener.listen(kafka_consumer))
-    create_task(mail_listener.listen(kafka_consumer))
+    create_task(kafka_router(kafka_consumer, [pushes_listener, mail_listener]))
 
     try:
         yield {

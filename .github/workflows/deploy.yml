@@ -2,7 +2,7 @@ name: Deploy notifications
 
 on:
   push:
-    branches: [CARD-77]
+    branches: [develop]
 
 jobs:
   test:
